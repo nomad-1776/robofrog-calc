@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RoboFrog Tools</title>
+
+    <!-- Google Fonts (Oswald) for placards -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        /* ===== Main Tab Navigation ===== */
+        .main-tabs {
+            max-width: 420px;
+            margin: 0 auto 0 auto;
+            display: flex;
+            gap: 0;
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background: #e9e9e9;
+            color: #555;
+            border-radius: 8px 8px 0 0;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .main-tab:hover {
+            background: #ddd;
+        }
+
+        .main-tab.active {
+            background: #f9f9f9;
+            color: #111;
+            border-bottom: 1px solid #f9f9f9;
+            margin-bottom: -1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== Tab Panels ===== */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ===== Form Container (shared) ===== */
+        .form-container {
+            max-width: 420px;
+            margin: 0 auto 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            background-color: #f9f9f9;
+        }
+
+        .form-container.standalone {
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+
+        .form-container button:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .form-container button:disabled:hover {
+            background-color: #9e9e9e;
+        }
+
+        /* ===== Calculator-specific ===== */
+        .output-container {
+            margin-top: 20px;
+        }
+
+        .output-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .output-row strong {
+            flex: 1;
+            text-align: left;
+        }
+
+        .output-row .value {
+            flex: 1;
+            text-align: right;
+        }
+
+        /* ===== Placard-specific ===== */
+        .hint {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 10px;
+            line-height: 1.35;
+        }
+
+        .placard-summary {
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px dashed #999;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .rev {
+            max-width: 420px;
+            margin: 10px auto 0 auto;
+            font-size: 12px;
+            opacity: 0.75;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* Mode cards */
+        .mode-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 8px 0 6px 0;
+        }
+
+        .mode-card {
+            background: #fff;
+            border: 1px solid #d7d7d7;
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .mode-card:hover {
+            background: #f6f6f6;
+        }
+
+        .mode-card.selected {
+            border-color: #4CAF50;
+            background: #eaf6ea;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.22);
+        }
+
+        .mode-label {
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 0.02em;
+            margin-bottom: 6px;
+        }
+
+        .mode-card input {
+            width: 100%;
+            margin: 2px 0 0 0;
+        }
+
+        .mode-hint {
+            margin-top: 6px;
+            font-size: 11px;
+            opacity: 0.8;
+            line-height: 1.25;
+        }
+
+        .blank-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0 4px 0;
+            font-size: 13px;
+        }
+
+        .blank-row input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 380px) {
+            .mode-wrap {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Skid sizes UI toggle button */
+        .form-container #skid-toggle-btn {
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .form-container #skid-toggle-btn[aria-expanded="false"] {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+        }
+
+        .form-container #skid-toggle-btn[aria-expanded="false"]:hover {
+            background-color: #45a049;
+        }
+
+        .form-container #skid-toggle-btn[aria-expanded="true"] {
+            background: #fff;
+            color: #111;
+            border: 1px solid #bbb;
+        }
+
+        .form-container #skid-toggle-btn[aria-expanded="true"]:hover {
+            background: #f1f1f1;
+        }
+
+        .form-container #skid-toggle-btn:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+
+        .skid-ui {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid #d7d7d7;
+            border-radius: 10px;
+            background: #fff;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .skid-ui * {
+            box-sizing: border-box;
+        }
+
+        .skid-title {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .skid-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            line-height: 1.35;
+        }
+
+        .tabbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-container .tab-btn,
+        .form-container .line-btn,
+        .form-container .preset-btn {
+            background: #fff;
+            color: #111;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-top: 0;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .form-container .tab-btn:hover,
+        .form-container .line-btn:hover,
+        .form-container .preset-btn:hover {
+            background: #f2f2f2;
+        }
+
+        .form-container .tab-btn:focus,
+        .form-container .line-btn:focus,
+        .form-container .preset-btn:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+
+        .form-container .tab-btn {
+            width: 100%;
+            font-weight: 800;
+            border-radius: 10px;
+        }
+
+        .form-container .tab-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.22);
+        }
+
+        .form-container .tab-btn.active:hover {
+            background: #45a049;
+            border-color: #45a049;
+        }
+
+        .linebar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-container .line-btn {
+            width: auto;
+            padding: 9px 12px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .form-container .line-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.22);
+        }
+
+        .form-container .line-btn.active:hover {
+            background: #45a049;
+            border-color: #45a049;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .form-container .preset-btn {
+            width: 100%;
+            min-height: 70px;
+            text-align: left;
+            border-radius: 12px;
+            padding: 10px 10px;
+        }
+
+        .form-container .preset-btn.selected {
+            border-color: #4CAF50;
+            background: #eaf6ea;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.22);
+        }
+
+        .preset-name {
+            display: block;
+            font-weight: 800;
+            font-size: 13px;
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+        }
+
+        .preset-qty {
+            display: block;
+            margin-top: 4px;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.01em;
+        }
+
+        .skid-selected {
+            margin-top: 10px;
+            font-size: 12px;
+            opacity: 0.85;
+            min-height: 16px;
+        }
+
+        @media (max-width: 380px) {
+            .preset-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Main Tab Navigation -->
+<div class="main-tabs">
+    <div class="main-tab active" id="main-tab-calc" data-panel="panel-calc">Calculator</div>
+    <div class="main-tab" id="main-tab-placards" data-panel="panel-placards">Placards</div>
+</div>
+
+<!-- ==================== CALCULATOR PANEL ==================== -->
+<div class="tab-panel active" id="panel-calc">
+    <div class="form-container">
+        <h2>Components Spent</h2>
+
+        <label for="quantity-built">Quantity Built:</label>
+        <input type="number" id="quantity-built" placeholder="Enter the quantity built">
+
+        <div class="skid-ui" id="comp-line-ui">
+            <div class="tabbar" role="tablist" aria-label="Departments">
+                <button type="button" class="tab-btn active" id="comp-tab-dry" role="tab" aria-selected="true" data-tab="dry">Dry Spice</button>
+                <button type="button" class="tab-btn" id="comp-tab-extracts" role="tab" aria-selected="false" data-tab="extracts">Extracts</button>
+            </div>
+
+            <div class="linebar" id="comp-linebar" aria-label="Lines"></div>
+            <div class="preset-grid" id="comp-preset-grid" aria-label="Component presets"></div>
+        </div>
+    </div>
+
+    <div class="form-container standalone">
+        <h2>Label Weight Calculations (kg)</h2>
+
+        <label for="label-weight">Label Weight:</label>
+        <input type="number" id="label-weight" step="0.01" placeholder="Enter the label weight">
+
+        <button onclick="calculateLabels()">Calculate Labels</button>
+
+        <div class="output-container" id="labels-output"></div>
+    </div>
+</div>
+
+<!-- ==================== PLACARDS PANEL ==================== -->
+<div class="tab-panel" id="panel-placards">
+    <div class="form-container">
+        <h2>Placard Generator</h2>
+
+        <label for="placard-sku">SKU:</label>
+        <input type="text" id="placard-sku" maxlength="7" placeholder="e.g., 60453" autocomplete="off" />
+
+        <label for="placard-lot">Lot #:</label>
+        <input type="text" id="placard-lot" maxlength="9" placeholder="e.g., W12345678" autocomplete="off" />
+
+        <!-- Mode cards -->
+        <div class="mode-wrap" id="mode-wrap">
+            <div class="mode-card selected" id="mode-auto" data-mode="auto" tabindex="-1">
+                <div class="mode-label">Job Total</div>
+                <input type="number" id="placard-jobtotal" autocomplete="off" placeholder="e.g., 12500" min="1" step="1" aria-label="Job Total" />
+                <div class="mode-hint">Calculates full-qty placards using: floor(Job Total ÷ Qty/Pallet).</div>
+            </div>
+
+            <div class="mode-card" id="mode-manual" data-mode="manual" tabindex="-1">
+                <div class="mode-label">Manual Print</div>
+                <input type="number" id="placard-manualcount" autocomplete="off" placeholder="e.g., 3 placards" min="1" step="1" aria-label="Manual Print Count" />
+                <div class="mode-hint">Enter number of full-qty placards to print.</div>
+            </div>
+        </div>
+
+        <!-- Blank checkbox -->
+        <div class="blank-row">
+            <input type="checkbox" id="blank-sheet-checkbox" />
+            <label for="blank-sheet-checkbox">Print one additional <strong>BLANK-QUANTITY</strong> placard (last sheet)</label>
+        </div>
+
+        <label for="placard-palletqty">Quantity per Pallet:</label>
+        <input type="number" id="placard-palletqty" autocomplete="off" placeholder="e.g., 3240" min="1" step="1" />
+
+        <!-- Toggle for skid sizes -->
+        <button id="skid-toggle-btn" type="button" aria-controls="skid-panel" aria-expanded="false" title="Show/hide common skid size presets">
+            Show Common Skid Sizes
+        </button>
+
+        <!-- Skid sizes panel (hidden by default) -->
+        <div id="skid-panel" hidden>
+            <div class="skid-ui" id="skid-ui">
+                <div class="skid-title">Common Skid Sizes</div>
+                <div class="skid-subtitle">Choose a department, then a line, then tap a preset to fill "Quantity per Pallet".</div>
+
+                <div class="tabbar" role="tablist" aria-label="Departments">
+                    <button type="button" class="tab-btn active" id="tab-dry" role="tab" aria-selected="true" data-tab="dry">Dry Spice</button>
+                    <button type="button" class="tab-btn" id="tab-extracts" role="tab" aria-selected="false" data-tab="extracts">Extracts</button>
+                </div>
+
+                <div class="linebar" id="linebar" aria-label="Lines"></div>
+                <div class="preset-grid" id="preset-grid" aria-label="Skid size presets"></div>
+
+                <div class="skid-selected" id="skid-selected" aria-live="polite"></div>
+            </div>
+        </div>
+
+        <button id="placard-preview-btn" type="button">Preview Placard Count</button>
+        <button id="placard-print-btn" type="button">Print Placards</button>
+
+        <div class="hint">
+            Rules:
+            <br>• Full-qty placards come from either Job Total (auto) or Manual Print
+            <br>• If "Blank-Quantity placard" is checked, one extra page prints LAST with blank quantity
+            <br>• Must be used on a machine with printer access (mobile printing currently disabled)
+        </div>
+
+        <div id="placard-output"></div>
+    </div>
+</div>
+
+<!-- Revision stamp (visible on all tabs) -->
+<div class="rev" id="rev-stamp"></div>
+
+<script>
+    // ===== Main Tab Switching =====
+    const mainTabs = document.querySelectorAll('.main-tab');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    mainTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const panelId = tab.dataset.panel;
+
+            mainTabs.forEach(t => t.classList.remove('active'));
+            tabPanels.forEach(p => p.classList.remove('active'));
+
+            tab.classList.add('active');
+            document.getElementById(panelId).classList.add('active');
+        });
+    });
+
+    // ===== CALCULATOR FUNCTIONS =====
+
+    // Component line state
+    const compLineState = {
+        activeTab: "dry",
+        activeLine: { dry: "DS2", extracts: "Express" }
+    };
+
+    const COMP_LINE_DATA = {
+        dry: {
+            label: "Dry Spice",
+            lines: ["DS2", "DS3", "DS7", "DS8"]
+        },
+        extracts: {
+            label: "Extracts",
+            lines: ["Express"]
+        }
+    };
+
+    // Component definitions per line
+    const COMP_ITEMS = {
+        "DS2": [
+            { name: "BG00801", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "BG00802", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "Fitments", calc: (qty) => Math.round(qty * 1.02) * -1 },
+            { name: "Caps", calc: (qty) => Math.round(qty * 1.015) * -1 },
+            { name: "Bottles", calc: (qty) => Math.round(qty * 1.01) * -1 }
+        ],
+        "DS3": [
+            { name: "BG00801", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "BG00802", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "Fitments", calc: (qty) => Math.round(qty * 1.02) * -1 },
+            { name: "Caps", calc: (qty) => Math.round(qty * 1.015) * -1 },
+            { name: "Bottles", calc: (qty) => Math.round(qty * 1.01) * -1 }
+        ],
+        "DS7": [
+            { name: "BG00801", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "BG00802", calc: (qty) => qty * 0.00006 * -1, decimals: 4 },
+            { name: "Fitments", calc: (qty) => Math.round(qty * 1.02) * -1 },
+            { name: "Caps", calc: (qty) => Math.round(qty * 1.015) * -1 },
+            { name: "Bottles", calc: (qty) => Math.round(qty * 1.01) * -1 }
+        ],
+        "DS8": [
+            { name: "Bottles (FX21500)", calc: (qty) => Math.round(qty * 1.015) * -1 },
+            { name: "Bottles (FX21800)", calc: (qty) => Math.round(qty * 1.01) * -1 },
+            { name: "Caps (FX21503)", calc: (qty) => Math.round(qty * 1.026) * -1 }
+        ],
+        "Express": [
+            { name: "Bottles (all types)", calc: (qty) => Math.round(qty * getExpressMultiplier(qty)) * -1 }
+        ]
+    };
+
+    function getExpressMultiplier(qty) {
+        if (qty <= 50000) return 1.02;
+        if (qty <= 99999) return 1.025;
+        if (qty <= 124999) return 1.03;
+        if (qty <= 149999) return 1.035;
+        if (qty <= 174999) return 1.04;
+        if (qty <= 199999) return 1.045;
+        if (qty <= 224999) return 1.05;
+        if (qty <= 249999) return 1.055;
+        return 1.06;
+    }
+
+    function setCompActiveTab(tabKey) {
+        compLineState.activeTab = tabKey;
+
+        document.querySelectorAll("#comp-line-ui .tab-btn").forEach(b => {
+            const active = (b.dataset.tab === tabKey);
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", active ? "true" : "false");
+        });
+
+        renderCompLineButtons();
+        renderCompPresetGrid();
+    }
+
+    function renderCompLineButtons() {
+        const linebar = document.getElementById("comp-linebar");
+        const lines = COMP_LINE_DATA[compLineState.activeTab].lines;
+
+        linebar.innerHTML = lines.map(line => {
+            const isActive = compLineState.activeLine[compLineState.activeTab] === line;
+            return `
+                <button
+                    type="button"
+                    class="line-btn ${isActive ? "active" : ""}"
+                    data-line="${line}"
+                    aria-pressed="${isActive ? "true" : "false"}"
+                >${line}</button>
+            `;
+        }).join("");
+
+        linebar.querySelectorAll(".line-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                compLineState.activeLine[compLineState.activeTab] = btn.dataset.line;
+                renderCompLineButtons();
+                renderCompPresetGrid();
+            });
+        });
+    }
+
+    function renderCompPresetGrid() {
+        const grid = document.getElementById("comp-preset-grid");
+        const currentLine = compLineState.activeLine[compLineState.activeTab];
+        const items = COMP_ITEMS[currentLine] || [];
+
+        const built = parseFloat(document.getElementById('quantity-built').value);
+        const hasValidQty = !isNaN(built) && built > 0;
+
+        grid.innerHTML = items.map(item => {
+            let valueDisplay = "—";
+            if (hasValidQty) {
+                const val = item.calc(built);
+                if (item.decimals) {
+                    valueDisplay = val.toLocaleString(undefined, {
+                        minimumFractionDigits: item.decimals,
+                        maximumFractionDigits: item.decimals
+                    });
+                } else {
+                    valueDisplay = val.toLocaleString();
+                }
+            }
+            return `
+                <div class="preset-btn" style="cursor: default;">
+                    <span class="preset-name">${item.name}</span>
+                    <span class="preset-qty">${valueDisplay}</span>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function initCompLineUI() {
+        document.getElementById("comp-tab-dry").addEventListener("click", () => setCompActiveTab("dry"));
+        document.getElementById("comp-tab-extracts").addEventListener("click", () => setCompActiveTab("extracts"));
+
+        // Update grid when quantity changes
+        document.getElementById("quantity-built").addEventListener("input", renderCompPresetGrid);
+
+        setCompActiveTab(compLineState.activeTab);
+    }
+
+    function calculateLabels() {
+        const labelWeight = parseFloat(document.getElementById('label-weight').value);
+
+        if (isNaN(labelWeight) || labelWeight <= 0) {
+            alert('Please enter a valid Label Weight greater than 0.');
+            return;
+        }
+
+        const ggFront = Math.round((labelWeight / 2.72) * 10000);
+        const ggBack = Math.round((labelWeight / 2.70) * 10000);
+        const wat5ozLofton = Math.round((labelWeight / 4.3) * 3000);
+        const ewLabels = Math.round((labelWeight / 0.43) * 1500);
+
+        const formattedGGFront = ggFront.toLocaleString();
+        const formattedGGBack = ggBack.toLocaleString();
+        const formattedWAT5ozLofton = wat5ozLofton.toLocaleString();
+        const formattedEWLabels = ewLabels.toLocaleString();
+
+        document.getElementById('labels-output').innerHTML = `
+            <h3>Label Weight Results (kg)</h3>
+            <div class="output-row"><strong>GG 4oz Front:</strong><span class="value">${formattedGGFront}</span></div>
+            <div class="output-row"><strong>GG 4oz Back:</strong><span class="value">${formattedGGBack}</span></div>
+            <div class="output-row"><strong>EW:</strong><span class="value">${formattedEWLabels}</span></div>
+            <div class="output-row"><strong>WAT 5oz:</strong><span class="value">${formattedWAT5ozLofton}</span></div>
+        `;
+    }
+
+    // Calculator Enter key handlers
+    document.getElementById('label-weight').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') calculateLabels();
+    });
+
+    // ===== PLACARD FUNCTIONS =====
+    const REV = "REV: 2025-12-23 00:30";
+    document.getElementById("rev-stamp").textContent = REV;
+
+    function normalizeUpperTrim(s) {
+        return (s || "").toString().trim().toUpperCase();
+    }
+
+    function sizeForSkuChars(n) {
+        if (n <= 5) return 2.15;
+        if (n === 6) return 2.00;
+        return 1.88;
+    }
+
+    function sizeForLotChars(n) {
+        if (n <= 7) return 2.15;
+        if (n === 8) return 2.08;
+        return 1.98;
+    }
+
+    function sizeForQtyChars(n) {
+        if (n <= 4) return 2.08;
+        return 1.95;
+    }
+
+    function buildPlacardHTML({ sku, lot, qtyDisplay, isBlankQty, isLastPage }) {
+        const skuStr = String(sku);
+        const lotStr = String(lot);
+
+        const skuSize = sizeForSkuChars(skuStr.length);
+        const lotSize = sizeForLotChars(lotStr.length);
+
+        const skuLenClass = `sku-len-${skuStr.length}`;
+        const lotLenClass = `lot-len-${lotStr.length}`;
+
+        let qtyBlock = "";
+        let qtyBlockClass = "";
+        if (isBlankQty) {
+            qtyBlock = `<div class="writein" aria-label="Blank quantity"></div>`;
+        } else {
+            const qtyStr = String(qtyDisplay);
+            const qtySize = sizeForQtyChars(qtyStr.length);
+            qtyBlockClass = `qty-len-${qtyStr.length}`;
+            qtyBlock = `
+          <div class="val qty-val" style="font-size:${qtySize}in;">
+            <span class="val-inner">${qtyStr}</span>
+          </div>
+        `;
+        }
+
+        return `
+        <div class="page ${isLastPage ? "last-page" : ""}">
+          <div class="placard">
+            <div class="block sku-block ${skuLenClass}">
+              <div class="hdr">SKU</div>
+              <div class="val sku-val" style="font-size:${skuSize}in;">
+                <span class="val-inner">${skuStr}</span>
+              </div>
+            </div>
+
+            <div class="block lot-block ${lotLenClass}">
+              <div class="hdr">LOT</div>
+              <div class="val lot-val" style="font-size:${lotSize}in;">
+                <span class="val-inner">${lotStr}</span>
+              </div>
+            </div>
+
+            <div class="block qty-block ${qtyBlockClass}">
+              <div class="hdr">QUANTITY</div>
+              ${qtyBlock}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildPrintDocumentCSS() {
+        return `
+    @page { size: letter; margin: 0.25in; }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      color: #000;
+      overflow: visible;
+      font-size: 0;
+    }
+
+    .page {
+      width: 8in;
+      height: 10.5in;
+      box-sizing: border-box;
+      display: block;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      overflow: hidden;
+      font-size: 16px;
+    }
+
+    .page:not(:last-child) {
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    .placard {
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.05in;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+
+      text-align: center;
+      text-transform: uppercase;
+
+      font-family: "Oswald", Arial, sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 700;
+      font-style: normal;
+      font-synthesis: none;
+    }
+
+    .block { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .sku-block { flex: 0.88; }
+    .lot-block { flex: 1.20; }
+    .qty-block { flex: 0.88; }
+
+    .hdr {
+      display: inline-block;
+      width: auto;
+      max-width: 100%;
+      box-sizing: border-box;
+
+      font-size: 0.58in;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      line-height: 1;
+      white-space: nowrap;
+
+      padding: 0 0.12in 0.06in 0.12in;
+      border-bottom: 0.10in solid #000;
+      margin-bottom: 0.20in;
+    }
+
+    .lot-block .hdr { margin-bottom: 0.28in; }
+
+    .val {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      white-space: nowrap;
+      overflow: visible;
+      padding: 0.06in 0 0.10in;
+    }
+
+    .val-inner {
+      display: inline-block;
+      font-weight: 700;
+      transform-origin: center;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    .lot-block .val-inner { letter-spacing: 0.06em; }
+
+    .sku-block.sku-len-6 .val-inner { transform: scaleX(0.96); }
+    .sku-block.sku-len-7 .val-inner { transform: scaleX(0.92); }
+
+    .lot-block.lot-len-7 .val-inner { transform: scaleX(0.88) scaleY(1.10); }
+    .lot-block.lot-len-8 .val-inner { transform: scaleX(0.80) scaleY(1.10); }
+    .lot-block.lot-len-9 .val-inner { transform: scaleX(0.74) scaleY(1.10); }
+
+    .qty-block.qty-len-5 .val-inner { transform: scaleX(0.95); }
+    .qty-block.qty-len-6 .val-inner { transform: scaleX(0.92); }
+
+    .writein {
+      height: 2.2in;
+      width: 100%;
+    }
+  `;
+    }
+
+    function printPlacardsViaIframe(pagesHtml) {
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.style.border = "0";
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        const trimmedHtml = pagesHtml.trim();
+        doc.open();
+        doc.write(`
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <title>Placards</title>
+
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+
+            <style>${buildPrintDocumentCSS()}</style>
+          </head>
+          <body>${trimmedHtml}</body>
+        </html>
+      `);
+        doc.close();
+
+        const w = iframe.contentWindow;
+
+        const fontsReady = (w.document.fonts && w.document.fonts.ready)
+            ? w.document.fonts.ready
+            : Promise.resolve();
+
+        const timeout = new Promise(resolve => setTimeout(resolve, 2000));
+
+        Promise.race([fontsReady, timeout]).then(() => {
+            w.focus();
+            w.print();
+            setTimeout(() => {
+                try { document.body.removeChild(iframe); } catch (e) {}
+            }, 1000);
+        });
+    }
+
+    // Count mode state
+    const countMode = { active: "auto" };
+
+    function setActiveMode(mode) {
+        countMode.active = (mode === "manual") ? "manual" : "auto";
+
+        const autoCard = document.getElementById("mode-auto");
+        const manualCard = document.getElementById("mode-manual");
+
+        const autoOn = countMode.active === "auto";
+        autoCard.classList.toggle("selected", autoOn);
+        manualCard.classList.toggle("selected", !autoOn);
+    }
+
+    function initModeCards() {
+        const autoCard = document.getElementById("mode-auto");
+        const manualCard = document.getElementById("mode-manual");
+        const jobEl = document.getElementById("placard-jobtotal");
+        const manEl = document.getElementById("placard-manualcount");
+
+        autoCard.addEventListener("click", () => { setActiveMode("auto"); jobEl.focus(); });
+        manualCard.addEventListener("click", () => { setActiveMode("manual"); manEl.focus(); });
+
+        jobEl.addEventListener("focus", () => setActiveMode("auto"));
+        jobEl.addEventListener("input", () => setActiveMode("auto"));
+
+        manEl.addEventListener("focus", () => setActiveMode("manual"));
+        manEl.addEventListener("input", () => setActiveMode("manual"));
+
+        setActiveMode("auto");
+    }
+
+    // Blank checkbox persistence
+    const BLANK_STORAGE_KEY = "robofrog.printBlank.v1";
+
+    function loadBlankPreference() {
+        const cb = document.getElementById("blank-sheet-checkbox");
+        if (!cb) return;
+
+        try {
+            const raw = localStorage.getItem(BLANK_STORAGE_KEY);
+            if (raw === null) {
+                cb.checked = true;
+            } else {
+                cb.checked = (raw === "1");
+            }
+        } catch (_) {
+            cb.checked = true;
+        }
+    }
+
+    function saveBlankPreference() {
+        const cb = document.getElementById("blank-sheet-checkbox");
+        if (!cb) return;
+        try {
+            localStorage.setItem(BLANK_STORAGE_KEY, cb.checked ? "1" : "0");
+        } catch (_) {}
+    }
+
+    function initBlankCheckboxPersistence() {
+        const cb = document.getElementById("blank-sheet-checkbox");
+        if (!cb) return;
+        loadBlankPreference();
+        cb.addEventListener("change", saveBlankPreference);
+    }
+
+    // Validation
+    function validateBaseInputs(sku, lot, palletQty) {
+        if (sku.length < 1 || sku.length > 7) return "SKU must be 1–7 characters.";
+        if (!/^W\d{6,8}$/.test(lot)) return "Lot must look like W + 6 to 8 digits (e.g., W12345678).";
+        if (!Number.isInteger(palletQty) || palletQty <= 0) return "Quantity per pallet must be a whole number > 0.";
+        return null;
+    }
+
+    function validateModeInput(mode, jobTotal, manualFull) {
+        if (mode === "manual") {
+            if (!Number.isInteger(manualFull) || manualFull <= 0) return "Manual Print must be a whole number > 0 (full-qty placards).";
+        } else {
+            if (!Number.isInteger(jobTotal) || jobTotal <= 0) return "Job Total must be a whole number > 0.";
+        }
+        return null;
+    }
+
+    function computePlan({ mode, jobTotal, manualFull, palletQty, printBlank }) {
+        const fullCount = (mode === "manual")
+            ? manualFull
+            : Math.floor(jobTotal / palletQty);
+
+        const blankCount = printBlank ? 1 : 0;
+        const totalCount = fullCount + blankCount;
+
+        const remainder = (mode === "manual") ? null : (jobTotal % palletQty);
+
+        return { fullCount, blankCount, totalCount, remainder };
+    }
+
+    function getInputsOrAlert() {
+        const sku = normalizeUpperTrim(document.getElementById("placard-sku").value);
+        const lot = normalizeUpperTrim(document.getElementById("placard-lot").value);
+
+        const jobTotal = parseInt(document.getElementById("placard-jobtotal").value, 10);
+        const manualFull = parseInt(document.getElementById("placard-manualcount").value, 10);
+        const palletQty = parseInt(document.getElementById("placard-palletqty").value, 10);
+
+        const printBlank = !!document.getElementById("blank-sheet-checkbox").checked;
+
+        const baseErr = validateBaseInputs(sku, lot, palletQty);
+        if (baseErr) { alert(baseErr); return null; }
+
+        const modeErr = validateModeInput(countMode.active, jobTotal, manualFull);
+        if (modeErr) { alert(modeErr); return null; }
+
+        return { sku, lot, jobTotal, manualFull, palletQty, printBlank, mode: countMode.active };
+    }
+
+    function previewPlacardCount() {
+        const outputEl = document.getElementById("placard-output");
+
+        if (outputEl.innerHTML.trim() !== "") {
+            outputEl.innerHTML = "";
+            return;
+        }
+
+        const inputs = getInputsOrAlert();
+        if (!inputs) return;
+
+        const plan = computePlan(inputs);
+
+        const modeLabel = (inputs.mode === "manual") ? "Manual Print" : "Job Total (auto)";
+        const blankText = inputs.printBlank ? "YES (last sheet blank)" : "NO";
+
+        let calcDetails = "";
+        if (inputs.mode === "manual") {
+            calcDetails = `
+        Mode: <strong>${modeLabel}</strong><br>
+        Manual full-qty placards: <strong>${plan.fullCount.toLocaleString()}</strong><br>
+      `;
+        } else {
+            calcDetails = `
+        Mode: <strong>${modeLabel}</strong><br>
+        Job Total: <strong>${inputs.jobTotal.toLocaleString()}</strong><br>
+        Full-qty placards: <strong>${plan.fullCount.toLocaleString()}</strong><br>
+        Remainder: <strong>${plan.remainder.toLocaleString()}</strong><br>
+      `;
+        }
+
+        outputEl.innerHTML = `
+      <div class="placard-summary">
+        <strong>Plan</strong><br>
+        SKU: <strong>${inputs.sku}</strong><br>
+        LOT: <strong>${inputs.lot}</strong><br>
+        Qty/Pallet: <strong>${inputs.palletQty.toLocaleString()}</strong><br><br>
+
+        ${calcDetails}
+        Print blank-quantity placard: <strong>${blankText}</strong><br><br>
+
+        Full-qty pages: <strong>${plan.fullCount.toLocaleString()}</strong><br>
+        Blank pages: <strong>${plan.blankCount.toLocaleString()}</strong><br>
+        Total pages: <strong>${plan.totalCount.toLocaleString()}</strong>
+      </div>
+    `;
+    }
+
+    function printPlacardsFromJob() {
+        const inputs = getInputsOrAlert();
+        if (!inputs) return;
+
+        const plan = computePlan(inputs);
+
+        if (plan.fullCount <= 0 && !inputs.printBlank) {
+            alert("Nothing to print.");
+            return;
+        }
+
+        let pagesHtml = "";
+
+        for (let i = 0; i < plan.fullCount; i++) {
+            pagesHtml += buildPlacardHTML({
+                sku: inputs.sku,
+                lot: inputs.lot,
+                qtyDisplay: inputs.palletQty,
+                isBlankQty: false,
+                isLastPage: false
+            });
+        }
+
+        if (inputs.printBlank) {
+            pagesHtml += buildPlacardHTML({
+                sku: inputs.sku,
+                lot: inputs.lot,
+                qtyDisplay: inputs.palletQty,
+                isBlankQty: true,
+                isLastPage: true
+            });
+        }
+
+        printPlacardsViaIframe(pagesHtml);
+    }
+
+    // Mobile detection
+    function isMobileLike() {
+        const uaDataMobile = navigator?.userAgentData?.mobile === true;
+        const ua = navigator.userAgent || "";
+        const uaPhone = /Android.*Mobile|iPhone|iPod|IEMobile|Opera Mini|Windows Phone|webOS/i.test(ua);
+
+        if (uaDataMobile || uaPhone) return true;
+
+        const smallScreen = Math.min(window.screen.width, window.screen.height) <= 600;
+        const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+        const noHover = window.matchMedia && window.matchMedia("(hover: none)").matches;
+
+        return smallScreen && coarse && noHover;
+    }
+
+    function applyPrintAvailability() {
+        const btn = document.getElementById("placard-print-btn");
+        if (!btn) return;
+
+        if (isMobileLike()) {
+            btn.disabled = true;
+            btn.textContent = "Print Unavailable on Mobile";
+            btn.title = "Printing is disabled on mobile devices.";
+        } else {
+            btn.disabled = false;
+            btn.textContent = "Print Placards";
+            btn.title = "";
+        }
+    }
+
+    // Skid sizes data
+    const SKID_DATA = {
+        dry: {
+            label: "Dry Spice",
+            lines: [
+                { line: "DS8", items: [
+                        { name: "WAT Food Service", qty: 624 },
+                        { name: "WAT Family Size", qty: 1350 },
+                        { name: "YS", qty: 3024 },
+                    ]},
+                { line: "DS7", items: [
+                        { name: "GV 4 oz", qty: 3024 },
+                    ]},
+                { line: "DS3", items: [
+                        { name: "GG 4 oz", qty: 3780 },
+                        { name: "GG 4 oz (grinder)", qty: 3240 },
+                    ]},
+                { line: "DS2", items: [
+                        { name: "WAT 5 oz", qty: 3240 },
+                        { name: "WAT 5 oz (grinder)", qty: 3096 },
+                    ]},
+            ],
+        },
+        extracts: {
+            label: "Extracts",
+            lines: [
+                { line: "Express", items: [
+                        { name: "GV 1 oz", qty: 7320 },
+                        { name: "GV 2 oz", qty: 4608 },
+                    ]},
+                { line: "Liquid", items: [
+                        { name: "WAT 11 oz", qty: 1296 },
+                        { name: "WAT 8 oz", qty: 1890 },
+                    ]},
+                { line: "811", items: [
+                        { name: "WAT 4 oz", qty: 2952 },
+                        { name: "WAT 11 oz bitters", qty: 960 },
+                        { name: "WAT 4 oz bitters", qty: 2100 },
+                    ]},
+                { line: "XL", items: [
+                        { name: "WAT Gallons", qty: 144 },
+                        { name: "WAT 32 oz", qty: 414 },
+                        { name: "WAT 16 oz", qty: 768 },
+                    ]},
+            ],
+        },
+    };
+
+    const skidState = {
+        activeTab: "dry",
+        activeLine: { dry: "DS8", extracts: "Express" },
+        selectedKey: null,
+    };
+
+    const SKID_STORAGE_KEY = "robofrog.skidState.v1";
+
+    function saveSkidState() {
+        const payload = {
+            activeTab: skidState.activeTab,
+            activeLine: skidState.activeLine,
+            selectedKey: skidState.selectedKey
+        };
+        try {
+            localStorage.setItem(SKID_STORAGE_KEY, JSON.stringify(payload));
+        } catch (_) {}
+    }
+
+    function loadSkidState() {
+        try {
+            const raw = localStorage.getItem(SKID_STORAGE_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+
+            if (data && (data.activeTab === "dry" || data.activeTab === "extracts")) {
+                skidState.activeTab = data.activeTab;
+            }
+            if (data && data.activeLine && typeof data.activeLine === "object") {
+                skidState.activeLine = {
+                    dry: data.activeLine.dry || skidState.activeLine.dry,
+                    extracts: data.activeLine.extracts || skidState.activeLine.extracts
+                };
+            }
+            if (data && typeof data.selectedKey === "string") {
+                skidState.selectedKey = data.selectedKey;
+            }
+        } catch (_) {}
+    }
+
+    function fmtQty(n) {
+        return Number(n).toLocaleString();
+    }
+
+    function clearPlacardInputsOnLoad() {
+        ["placard-sku", "placard-lot", "placard-jobtotal", "placard-manualcount", "placard-palletqty"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+
+        const out = document.getElementById("placard-output");
+        if (out) out.innerHTML = "";
+
+        setActiveMode("auto");
+    }
+
+    function setPalletQtyFromPreset({ tabKey, line, name, qty }) {
+        const palletEl = document.getElementById("placard-palletqty");
+        palletEl.value = String(qty);
+        palletEl.focus();
+        palletEl.select?.();
+
+        const tabLabel = SKID_DATA[tabKey].label;
+        const msg = document.getElementById("skid-selected");
+        msg.textContent = `Selected: ${tabLabel} / ${line} — ${name} (${fmtQty(qty)})`;
+
+        skidState.selectedKey = `${tabKey}||${line}||${name}||${qty}`;
+        highlightSelectedPreset();
+        saveSkidState();
+    }
+
+    function safeQueryPresetButtonByKey(key) {
+        if (window.CSS && typeof CSS.escape === "function") {
+            return document.querySelector(`.preset-btn[data-key="${CSS.escape(key)}"]`);
+        }
+        const escaped = key.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+        return document.querySelector(`.preset-btn[data-key="${escaped}"]`);
+    }
+
+    function highlightSelectedPreset() {
+        document.querySelectorAll(".preset-btn.selected").forEach(b => b.classList.remove("selected"));
+        if (!skidState.selectedKey) return;
+        const btn = safeQueryPresetButtonByKey(skidState.selectedKey);
+        if (btn) btn.classList.add("selected");
+    }
+
+    function renderLineButtons() {
+        const linebar = document.getElementById("linebar");
+        const lines = SKID_DATA[skidState.activeTab].lines;
+
+        linebar.innerHTML = lines.map(l => {
+            const isActive = skidState.activeLine[skidState.activeTab] === l.line;
+            return `
+          <button
+            type="button"
+            class="line-btn ${isActive ? "active" : ""}"
+            data-line="${l.line}"
+            aria-pressed="${isActive ? "true" : "false"}"
+          >${l.line}</button>
+        `;
+        }).join("");
+
+        linebar.querySelectorAll(".line-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                skidState.activeLine[skidState.activeTab] = btn.dataset.line;
+                renderLineButtons();
+                renderPresetGrid();
+                saveSkidState();
+            });
+        });
+    }
+
+    function renderPresetGrid() {
+        const grid = document.getElementById("preset-grid");
+        const lines = SKID_DATA[skidState.activeTab].lines;
+        const activeLineName = skidState.activeLine[skidState.activeTab];
+        const lineObj = lines.find(l => l.line === activeLineName) || lines[0];
+
+        if (!lineObj) {
+            grid.innerHTML = "";
+            return;
+        }
+
+        grid.innerHTML = lineObj.items.map(it => {
+            const key = `${skidState.activeTab}||${lineObj.line}||${it.name}||${it.qty}`;
+            return `
+          <button
+            type="button"
+            class="preset-btn"
+            data-key="${key}"
+            aria-label="Set quantity per pallet to ${it.qty} for ${it.name} on line ${lineObj.line}"
+          >
+            <span class="preset-name">${it.name}</span>
+            <span class="preset-qty">${fmtQty(it.qty)}</span>
+          </button>
+        `;
+        }).join("");
+
+        grid.querySelectorAll(".preset-btn").forEach((btn, idx) => {
+            btn.addEventListener("click", () => {
+                const it = lineObj.items[idx];
+                setPalletQtyFromPreset({
+                    tabKey: skidState.activeTab,
+                    line: lineObj.line,
+                    name: it.name,
+                    qty: it.qty
+                });
+            });
+        });
+
+        const msg = document.getElementById("skid-selected");
+        if (msg && skidState.selectedKey && !msg.textContent) {
+            const parts = skidState.selectedKey.split("||");
+            if (parts.length === 4) {
+                const [tabKey, line, name, qty] = parts;
+                const tabLabel = SKID_DATA[tabKey]?.label || tabKey;
+                msg.textContent = `Last selection: ${tabLabel} / ${line} — ${name} (${fmtQty(qty)})`;
+            }
+        }
+
+        highlightSelectedPreset();
+    }
+
+    function setActiveTab(tabKey) {
+        skidState.activeTab = tabKey;
+
+        document.querySelectorAll("#skid-ui .tab-btn").forEach(b => {
+            const active = (b.dataset.tab === tabKey);
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", active ? "true" : "false");
+        });
+
+        renderLineButtons();
+        renderPresetGrid();
+        saveSkidState();
+    }
+
+    function initSkidUI() {
+        document.getElementById("tab-dry").addEventListener("click", () => setActiveTab("dry"));
+        document.getElementById("tab-extracts").addEventListener("click", () => setActiveTab("extracts"));
+
+        setActiveTab(skidState.activeTab);
+    }
+
+    function initSkidToggle() {
+        const btn = document.getElementById("skid-toggle-btn");
+        const panel = document.getElementById("skid-panel");
+        if (!btn || !panel) return;
+
+        panel.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+        btn.textContent = "Show Common Skid Sizes";
+
+        btn.addEventListener("click", () => {
+            const willShow = panel.hidden;
+            panel.hidden = !panel.hidden;
+            btn.setAttribute("aria-expanded", willShow ? "true" : "false");
+            btn.textContent = willShow ? "Hide Common Skid Sizes" : "Show Common Skid Sizes";
+        });
+    }
+
+    function clearSkidSelection() {
+        skidState.selectedKey = null;
+        document.querySelectorAll(".preset-btn.selected").forEach(b => b.classList.remove("selected"));
+
+        const msg = document.getElementById("skid-selected");
+        if (msg) msg.textContent = "";
+
+        saveSkidState();
+    }
+
+    function initPalletQtyManualOverride() {
+        const palletQtyEl = document.getElementById("placard-palletqty");
+        if (!palletQtyEl) return;
+
+        palletQtyEl.addEventListener("input", (e) => {
+            if (e.isTrusted && skidState.selectedKey) {
+                clearSkidSelection();
+            }
+        });
+    }
+
+    // ===== Initialize Everything =====
+    loadSkidState();
+    initBlankCheckboxPersistence();
+    initModeCards();
+    clearPlacardInputsOnLoad();
+
+    // Initialize component line UI
+    initCompLineUI();
+
+    window.addEventListener("pageshow", (e) => {
+        if (e.persisted) clearPlacardInputsOnLoad();
+    });
+
+    document.getElementById("placard-preview-btn").addEventListener("click", previewPlacardCount);
+    document.getElementById("placard-print-btn").addEventListener("click", printPlacardsFromJob);
+
+    // Enter triggers preview for placard inputs
+    ["placard-sku", "placard-lot", "placard-jobtotal", "placard-manualcount", "placard-palletqty"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") previewPlacardCount();
+        });
+    });
+
+    // Force capital W at start of lot
+    document.getElementById("placard-lot").addEventListener("input", (e) => {
+        let val = e.target.value.toUpperCase();
+        if (val.length > 0 && val[0] !== 'W') {
+            val = 'W' + val.replace(/^W*/i, '');
+        }
+        e.target.value = val;
+    });
+
+    initSkidUI();
+    initSkidToggle();
+    initPalletQtyManualOverride();
+
+    applyPrintAvailability();
+    window.addEventListener("resize", applyPrintAvailability);
+    window.addEventListener("orientationchange", applyPrintAvailability);
+</script>
+</body>
+</html>
