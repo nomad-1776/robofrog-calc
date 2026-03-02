@@ -587,7 +587,7 @@
         "DS8": [
             { name: "Bottles (FX21500)", calc: (qty) => Math.round(qty * 1.015) * -1 },
             { name: "Bottles (FX21800)", calc: (qty) => Math.round(qty * 1.01) * -1 },
-            { name: "Caps (FX21503)", calc: (qty) => Math.round(qty * 1.026) * -1 }
+            { name: "Caps (FX21503)", calc: (qty) => Math.round(qty * 1.025) * -1 }
         ],
         "Express": [
             { name: "Bottles (all types)", calc: (qty) => Math.round(qty * getExpressMultiplier(qty)) * -1 }
@@ -692,9 +692,9 @@
             return;
         }
 
-        const ggFront = Math.round((labelWeight / 2.72) * 10000);
-        const ggBack = Math.round((labelWeight / 2.70) * 10000);
-        const wat5ozLofton = Math.round((labelWeight / 4.3) * 3000);
+        const ggFront = Math.round((labelWeight / 5.39) * 20000);
+        const ggBack = Math.round((labelWeight / 5.34) * 20000);
+        const wat5ozLofton = Math.round((labelWeight / 4.0) * 3000);
         const ewLabels = Math.round((labelWeight / 0.43) * 1500);
 
         const formattedGGFront = ggFront.toLocaleString();
@@ -1222,6 +1222,8 @@
                 { line: "Express", items: [
                         { name: "GV 1 oz", qty: 7320 },
                         { name: "GV 2 oz", qty: 4608 },
+                        { name: "PRSL 1 oz", qty: 4620 },
+                        { name: "PRSL 1 oz", qty: 3168 },
                     ]},
                 { line: "Liquid", items: [
                         { name: "WAT 11 oz", qty: 1296 },
